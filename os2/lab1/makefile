@@ -11,3 +11,6 @@ all : $(TARGETS)
 %.o : %.c
 	$(CC) $(CFLAGS) -c $<
 
+clean: 
+	rm -f $(TARGETS) *.o
+

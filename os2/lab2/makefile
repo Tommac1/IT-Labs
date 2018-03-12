@@ -1,5 +1,7 @@
+CC=gcc
+TARGETS=main libwho.so libwho.o
 
-all: main libwho.so libwho.o
+all: $(TARGETS) 
 
 main: libwho.so main.c
 	gcc main.c -o $@ -ldl
@@ -11,4 +13,5 @@ libwho.o: libwho.c
 	gcc -Wall -c -fPIC libwho.c
  
 clean:
-	rm -f *.o *.so 
+	rm -f *.o *.so
+	rm -f $(TARGETS)
