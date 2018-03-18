@@ -16,30 +16,32 @@ void cutString(char *str, int msb);
 void adjustStringArg(char *arg);
 void run(int argc, char **argv);
 void initChildBuffer(char **child, char *arg, int arg_len); 
-char **argvCopy(int argc, char **argv);
+char **argvCopyAndExtend(int argc, char **argv);
 void printOutput(int argc, char **argv);
 void run_child(int argc, char **argv, int which_child);
 
 int main(int argc, char *argv[])
 {
+    char **argv_copy = NULL;
     if (2 > argc) {
         printf("Usage %s string\n", argv[0]);
         exit(EXIT_FAILURE);
     }
 
+    argv_copy = argvCopyAndExtend(argc, argv);
+
     if (2 == argc) {
         /*  Only the maser of the masters process */
-        adjustStringArg(argv[1]);
+        adjustStringArg(argv_copy[1]);
     }
 
-    run(argc, argv);
+    run(argc, argv_copy);
 
     return 0;
 }
 
 void run(int argc, char **argv)
 {
-    int wstatus = 0;
     pid_t pid = 0;
     int last_arg_len = strlen(argv[argc - 1]);
 
@@ -50,19 +52,9 @@ void run(int argc, char **argv)
 
             if (0 != (pid = fork())) {
                 // We are int the parent
-                while (0 < (pid = wait(&wstatus))) {
-                    printf("pid %d ended status: %d\n", pid, wstatus);
-                   if (WIFEXITED(wstatus)) {
-                       printf("exited, status=%d\n", WEXITSTATUS(wstatus));
-                   } else if (WIFSIGNALED(wstatus)) {
-                       printf("killed by signal %d\n", WTERMSIG(wstatus));
-                   } else if (WIFSTOPPED(wstatus)) {
-                       printf("stopped by signal %d\n", WSTOPSIG(wstatus));
-                   } else if (WIFCONTINUED(wstatus)) {
-                       printf("continued\n");
-                   }
+                while (0 < (pid = wait(NULL))) {
+                    // No error handling.
                 }
-
             }
             else {
                 // We are in the second child
@@ -85,7 +77,6 @@ void run(int argc, char **argv)
 void run_child(int argc, char **argv, int which_child)
 {
     char *child_buf;
-    char **argv_copy;
     int last_arg_len = strlen(argv[argc - 1]);
     int child_len = (last_arg_len / 2);
 
@@ -96,26 +87,24 @@ void run_child(int argc, char **argv, int which_child)
         initChildBuffer(&child_buf, argv[argc - 1] + child_len, child_len);
     }
 
-    argv_copy = argvCopy(argc, argv);
-    argv_copy[argc] = child_buf;
+    // Append half of the last argument.
+    argv[argc] = child_buf;
 
-    printf("child %d las_arg %d child_len %d ", which_child, last_arg_len, child_len);
-    int i;
-    for (i = 0; i <= argc; ++i)
-        printf("%s ", argv_copy[i]);
-
-    printf("\n");
-
-    execv(argv[0], argv_copy);
+    execve(argv[0], argv, NULL);
 }
 
-char **argvCopy(int argc, char **argv)
+char **argvCopyAndExtend(int argc, char **argv)
 {
     int i;
+    size_t length = 0;
     char **ret = malloc(sizeof (char *) * (argc + 2));
     ret[argc + 1] = NULL;
-    for (i = 0; i < argc; ++i)
-        memcpy(&ret[i], &argv[i], strlen(argv[i]));
+    ret[argc] = NULL;
+    for (i = 0; i < argc; ++i) {
+        length = strlen(argv[i]) + 1;
+        ret[i] = malloc(length);
+        memcpy(ret[i], argv[i], length);
+    }
 
     return ret;
 }
