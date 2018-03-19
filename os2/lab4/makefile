@@ -10,7 +10,3 @@ all: $(TARGETS)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $<
-
-clean: 
-	rm -rf *.o
-	rm -f $(TARGETS)
