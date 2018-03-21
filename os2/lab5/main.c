@@ -18,52 +18,89 @@ int BIG_L_FLAG = FLAG_OFF;
 int DIR_NUM = 0;
 int FILE_NUM = 0;
 
+void my_closedir(DIR *dirp);
 void my_readdir(DIR *dirp, int level, char *relative_path);
+void processOptions(int argc, char *argv[]);
 int check_dotted_dirs(const char *name);
-DIR *_opendir(const char *path);
+DIR *my_opendir(const char *path);
 char *append_dir_path(char *path, char *dir_name);
+void process_dir_entry(struct dirent *de, int level, char *relative_path);
+
 
 int main(int argc, char *argv[])
 {
     DIR *dirp;
+    int init_level;
 
-    if (2 != argc) {
-        printf("%s dir\n", argv[0]);
-        exit(EXIT_FAILURE);
+    processOptions(argc, argv);
+    init_level = BIG_L_FLAG;
+
+    if (NULL == argv[optind]) {
+        dirp = my_opendir(".");
+        printf("%s\n", ".");
+        my_readdir(dirp, init_level, ".");
+    }
+    else {
+        dirp = my_opendir(argv[optind]);
+        printf("%s\n", argv[optind]);
+        my_readdir(dirp, init_level, argv[optind]);
     }
 
-    dirp = _opendir(argv[1]);
+    my_closedir(dirp);
 
-    printf("%s\n", argv[1]);
-    my_readdir(dirp, 1, argv[1]);
-
-    printf("%d directories, %d files\n", DIR_NUM, FILE_NUM);
+    printf("\n%d directories, %d files\n", DIR_NUM, FILE_NUM);
     return 0;
 }
 
 void my_readdir(DIR *dirp, int level, char *relative_path)
 {
     struct dirent *de;
-    DIR *dirp_new;
-    char *new_path;
-    int i;
 
     while (NULL != (de = readdir(dirp))) {
         if (0 == check_dotted_dirs(de->d_name)) {
-            for (i = 0; i < level; ++i)
-                printf("  ");
-
-            printf("%s\n", de->d_name);
-            FILE_NUM++;
-
-            if (DT_DIR == de->d_type) {
-                new_path = append_dir_path(relative_path, de->d_name);
-                FILE_NUM--;
-                DIR_NUM++;
-                dirp_new = _opendir(new_path);
-                my_readdir(dirp_new, level + 1, new_path);
-            }
+            process_dir_entry(de, level, relative_path);
         }
+    }
+}
+
+void process_dir_entry(struct dirent *de, int level, char *relative_path)
+{
+    DIR *dirp_new;
+    char *new_path;
+    int i;
+    char *buf;
+
+    if (DT_DIR == de->d_type) {
+        for (i = BIG_L_FLAG; i >= level; --i)
+            printf("  ");
+
+        printf("%s\n", de->d_name);
+        DIR_NUM++;
+
+        if (1 != level) {
+            new_path = append_dir_path(relative_path, de->d_name);
+
+            dirp_new = my_opendir(new_path);
+            my_readdir(dirp_new, level - 1, new_path);
+        }
+
+    }
+    else if (FLAG_OFF == D_FLAG) {
+        for (i = BIG_L_FLAG; i >= level; --i)
+            printf("  ");
+
+        printf("%s", de->d_name);
+
+        if (DT_LNK == de->d_type) {
+            printf(" -> ");
+            buf = malloc(sizeof(char) * PATH_MAX);
+            readlink(de->d_name, buf, PATH_MAX);
+            printf("%s\n", buf);
+        }
+
+        printf("\n");
+
+        FILE_NUM++;
     }
 }
 
@@ -81,12 +118,10 @@ char *append_dir_path(char *path, char *dir_name)
     
     strcat(full_path, dir_name);
 
-//    printf("append_dir_path: %s\n", full_path);
-
     return full_path;
 }
 
-DIR *_opendir(const char *path)
+DIR *my_opendir(const char *path)
 {
     DIR *dirp;
     if (NULL == (dirp = opendir(path))) {
@@ -95,6 +130,18 @@ DIR *_opendir(const char *path)
         exit(EXIT_FAILURE);
     }
     return dirp;
+}
+
+void my_closedir(DIR *dirp)
+{
+    int ret = 0;
+    if (NULL != dirp) {
+        ret = closedir(dirp);
+        if (0 != ret) {
+            perror("closedir");
+            exit(EXIT_FAILURE);
+        }
+    }
 }
 
 int check_dotted_dirs(const char *name)
@@ -107,3 +154,24 @@ int check_dotted_dirs(const char *name)
 
     return ret;
 }
+
+void processOptions(int argc, char *argv[])
+{
+    int ret = 0;
+
+    while (-1 != (ret = getopt(argc, argv, "dlfL:"))) {
+        switch (ret) {
+            case 'd': D_FLAG = FLAG_ON; break;
+            case 'l': L_FLAG = FLAG_ON; break;
+            case 'f': F_FLAG = FLAG_ON; break;
+            case 'L': BIG_L_FLAG = atoi(optarg); break;
+            case '?':
+                if ('L' == optopt)
+                    fprintf(stderr, "Option -%c requires an argument"
+                                    "greater than zero.\n", optopt);
+                break;
+            default: abort(); break;
+        }
+    }
+}
+
