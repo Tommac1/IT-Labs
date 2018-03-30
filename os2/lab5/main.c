@@ -25,6 +25,10 @@ int check_dotted_dirs(const char *name);
 DIR *my_opendir(const char *path);
 char *append_dir_path(char *path, char *dir_name);
 void process_dir_entry(struct dirent *de, int level, char *relative_path);
+void prepare_and_open_dir(struct dirent *de, char *relative_path, int level);
+void process_link(struct dirent *de, char *relative_path, int level);
+int check_if_dir(char *path);
+void print_name(char *filename, char *relative_path, int level);
 
 
 int main(int argc, char *argv[])
@@ -65,43 +69,127 @@ void my_readdir(DIR *dirp, int level, char *relative_path)
 
 void process_dir_entry(struct dirent *de, int level, char *relative_path)
 {
-    DIR *dirp_new;
-    char *new_path;
-    int i;
     char *buf;
+    ssize_t len = 0;
+    int target_is_dir = 0;
 
     if (DT_DIR == de->d_type) {
-        for (i = BIG_L_FLAG; i >= level; --i)
-            printf("  ");
+        print_name(de->d_name, relative_path, level);
+        printf("\n");
 
-        printf("%s\n", de->d_name);
         DIR_NUM++;
 
         if (1 != level) {
-            new_path = append_dir_path(relative_path, de->d_name);
-
-            dirp_new = my_opendir(new_path);
-            my_readdir(dirp_new, level - 1, new_path);
+            prepare_and_open_dir(de, relative_path, level);
         }
 
     }
     else if (FLAG_OFF == D_FLAG) {
-        for (i = BIG_L_FLAG; i >= level; --i)
-            printf("  ");
+        print_name(de->d_name, relative_path, level);
 
-        printf("%s", de->d_name);
+        FILE_NUM++;
 
         if (DT_LNK == de->d_type) {
-            printf(" -> ");
-            buf = malloc(sizeof(char) * PATH_MAX);
-            readlink(de->d_name, buf, PATH_MAX);
-            printf("%s\n", buf);
+            // We do not know, if the target file is dir or reg file
+            // Counting will happen in process_link()
+            FILE_NUM--;
+            process_link(de, relative_path, level);
         }
 
         printf("\n");
 
+    }
+    else if (DT_LNK == de->d_type) {
+        buf = malloc(sizeof(char) * PATH_MAX);
+        len = readlink(de->d_name, buf, PATH_MAX);
+        buf[len] = '\0';
+
+        target_is_dir = check_if_dir(buf);
+        if (target_is_dir) {
+            DIR_NUM++;
+
+            print_name(de->d_name, relative_path, level);
+            printf(" -> %s\n", buf);
+
+            if ((L_FLAG == FLAG_ON) && (1 != level)) {
+                prepare_and_open_dir(de, relative_path, level);
+            }
+        }
+
+        free(buf);
+    }
+}
+
+void print_name(char *filename, char *relative_path, int level)
+{
+    int i;
+    // Indent
+    for (i = BIG_L_FLAG; i >= level; --i)
+        printf("    ");
+
+    // Print relative path if flag is on
+    if (F_FLAG == FLAG_ON)
+        printf("%s/", relative_path);
+
+    printf("%s", filename);
+}
+
+void prepare_and_open_dir(struct dirent *de, char *relative_path, int level)
+{
+    char *new_path;
+    DIR *dirp_new;
+
+    new_path = append_dir_path(relative_path, de->d_name);
+
+    dirp_new = my_opendir(new_path);
+    my_readdir(dirp_new, level - 1, new_path);
+    my_closedir(dirp_new);
+}
+
+void process_link(struct dirent *de, char *relative_path, int level)
+{
+    char *buf;
+    int target_is_dir = 0;
+    ssize_t len = 0;
+
+    printf(" -> ");
+    buf = malloc(sizeof(char) * PATH_MAX);
+    len = readlink(de->d_name, buf, PATH_MAX);
+    buf[len] = '\0';
+    printf("%s", buf);
+
+    target_is_dir = check_if_dir(buf);
+    if (target_is_dir) {
+        DIR_NUM++;
+
+        if ((L_FLAG == FLAG_ON) && (1 != level)) {
+            printf("\n");
+            prepare_and_open_dir(de, relative_path, level);
+        }
+    }
+    else {
         FILE_NUM++;
     }
+
+    free(buf);
+}
+
+int check_if_dir(char *path)
+{
+    struct stat buf;
+    int ret = 0;
+    
+    if (0 > stat(path, &buf)) {
+        printf("%s ", path);
+        perror("stat");
+        exit(EXIT_FAILURE);
+    }
+
+    if ((buf.st_mode & S_IFMT) == S_IFDIR) {
+        ret = 1;
+    }
+
+    return ret;
 }
 
 char *append_dir_path(char *path, char *dir_name)
