@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
     if (3 != argc) {
         printf("%s N M\n", argv[0]);
         printf("\tN - N queens to place (and size of board)\n");
-        printf("\tM - mode (0 = DFS, 1 = BFS)\n");
+        printf("\tM - mode (0 = BFS, 1 = DFS)\n");
         exit(EXIT_FAILURE);
     }
 
@@ -225,9 +225,14 @@ void print_board(int **board)
     int j;
 
     for (i = 0; i < N_ROWS; ++i) {
-        for (j = 0; j < N_COLS; ++j) 
-            printf("%d ", board[i][j]);
-        
+        for (j = 0; j < N_COLS; ++j) {
+            if (board[i][j] == 2) {
+                printf("Q ");
+            }
+            else {
+                printf("_ ");
+            }
+        }
         printf("\n");
     }
 }
