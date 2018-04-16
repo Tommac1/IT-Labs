@@ -12,6 +12,6 @@ all: $(TARGETS)
 	$(CC) $(CFLAGS) -c $<
 
 clean:
-	rm -rf $(TARGETS)
+	rm -rfv $(TARGETS)
 	rm -rf *.o
 

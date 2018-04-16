@@ -144,6 +144,8 @@ void prepare_and_open_dir(struct dirent *de, char *relative_path, int level)
     dirp_new = my_opendir(new_path);
     my_readdir(dirp_new, level - 1, new_path);
     my_closedir(dirp_new);
+
+    free(new_path);
 }
 
 void process_link(struct dirent *de, char *relative_path, int level)
@@ -196,7 +198,7 @@ char *append_dir_path(char *path, char *dir_name)
 {
     const size_t path_len = strlen(path);
     const size_t dir_name_len = strlen(dir_name);
-    char *full_path = malloc(sizeof(char) * (path_len + dir_name_len + 1));
+    char *full_path = malloc(sizeof(char) * (path_len + dir_name_len + 2));
     assert(full_path);
 
     full_path[0] = '\0';

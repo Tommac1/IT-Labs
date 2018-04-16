@@ -21,7 +21,7 @@ void initChildBuffer(char **child, char *arg, int arg_len);
 char **argvCopyAndExtend(int argc, char **argv);
 void printOutput(int argc, char **argv);
 void run_child(int argc, char **argv, int which_child);
-void sigint_fetch();
+void signals_fetch();
 void sigtstp_block(sigset_t *iset);
 void sigtstp_unblock(sigset_t *iset);
 void run_parent(int pid, int pid2);
@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
         adjustStringArg(argv_copy[1]);
     }
 
-    sigint_fetch();
+    signals_fetch();
     sigtstp_block(&iset);
 
     run(argc, argv_copy);
@@ -108,7 +108,7 @@ void run_parent(int pid, int pid2)
     }
 }
 
-void sigint_fetch()
+void signals_fetch()
 {
     sigset_t iset;
     struct sigaction act;
@@ -118,6 +118,13 @@ void sigint_fetch()
     act.sa_mask = iset;
     act.sa_flags = 0;
     sigaction(SIGINT, &act, NULL);
+
+    sigemptyset(&iset);
+    act.sa_handler = SIG_IGN;
+    act.sa_mask = iset;
+    act.sa_flags = 0;
+    sigaction(SIGTSTP, &act, NULL);
+
 }
 
 void sigtstp_block(sigset_t *iset)
