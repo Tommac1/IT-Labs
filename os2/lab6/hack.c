@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
             goto exit_main_password_found;
         }
         else {
-            printf("Bruteforce failed. Password not found in dictionary %s.\n", he.filename);
+            printf("Bruteforce failed. Password not found in dictionary \"%s\".\n", he.filename);
         }
 
         goto exit_main_env_inited;
@@ -108,13 +108,16 @@ void calculate_optimal_pthreads_num(struct hack_env *he)
         goto calc_opened;
     }
 
+    // Surpress percent progress output
+    FILE_PASSED = 10000.10000;
+    FILE_PASSED_FIRST_CHECKPOINT = 10000.10000;
 
     for (i = 1; i <= 10; ++i) {
 
         // Calculate time taken by a request
         clock_gettime(CLOCK_REALTIME, &time_start);
 
-        printf("Spawning %d pthreads.\n", i);
+        printf("Spawning %d pthread%s. ", i, (i == 1) ? "" : "s");
         spawn_workers(i, filesize);
 
         clock_gettime(CLOCK_REALTIME, &time_end);
