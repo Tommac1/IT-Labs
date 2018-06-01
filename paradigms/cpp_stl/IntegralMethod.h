@@ -2,6 +2,7 @@
 #define INTEGRAL_H
 
 #include <vector>
+#include <iterator>
 #include "Utilities.h"
 #include "main.h"
 
@@ -17,8 +18,9 @@ protected:
 	    int i;
 	    double step = calculate_step(a, b, n);
 	    std::vector<double> ret (n + 1);
+	    int length = std::distance(ret.begin(), ret.end());
 
-	    for (i = 0; i <= n; ++i) {
+	    for (i = 0; i < length; ++i) {
 	        ret[i] = a + (i * step);
 	    }
 	    return ret;

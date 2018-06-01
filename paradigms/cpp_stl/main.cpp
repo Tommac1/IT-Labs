@@ -102,7 +102,6 @@ void calculate_function(std::string function, int negative, Results *res, Method
     Function fun = nullptr;
     std::locale loc;
     double integral = 0.0;
-    MethodsMap::iterator it;
     int i = 0;
 
     fun = regex_match_function(function);
@@ -115,8 +114,8 @@ void calculate_function(std::string function, int negative, Results *res, Method
 
     if (fun != NULL) {
         // Calculate integrals
-        for (it = methods.begin(); it != methods.end(); ++it, ++i) {
-            integral = it->second->CalculateIntegral(LOWER_BOUND, UPPER_BOUND,
+        for (auto &it : methods) {
+            integral = it.second->CalculateIntegral(LOWER_BOUND, UPPER_BOUND,
                     fun, N_INTERVALS);
 
             if (negative) {
@@ -125,7 +124,7 @@ void calculate_function(std::string function, int negative, Results *res, Method
             else {
             	res->results[i] += (integral * MULTIPLIER);
             }
-
+            ++i;
         }
     }
     else {
