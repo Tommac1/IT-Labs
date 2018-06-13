@@ -35,10 +35,10 @@ METHOD_NAMES = [ 'Rectangles Method', 'Trapezes Method',
     'Simspons Method', 'Monte Carlos Method' ];
 
 
-METHODS = { METHOD_NAMES[0]: methods.rectangles_method,
-        METHOD_NAMES[1]: methods.trapeze_method,
-        METHOD_NAMES[2]: methods.simpsons_method,
-        METHOD_NAMES[3]: methods.monte_carlo_method };
+METHODS = { METHOD_NAMES[0]: methods.RectanglesMethod(),
+        METHOD_NAMES[1]: methods.TrapezeMethod(),
+        METHOD_NAMES[2]: methods.SimpsonsMethod(),
+        METHOD_NAMES[3]: methods.MonteCarloMethod() };
 
 RESULTS = [
     { 'result': 0, 'deviation': 0 },
@@ -137,7 +137,8 @@ def calculate_function(arg, negative):
     if (None != fun):
         # Calculate integrals
         for i in range(0, NUM_METHODS):
-            integral = METHODS[METHOD_NAMES[i]](LOWER_BOUND, UPPER_BOUND, fun, N_INTERVALS);
+            integral = METHODS[METHOD_NAMES[i]].Calculate(LOWER_BOUND, UPPER_BOUND, fun, N_INTERVALS);
+
 
             if (negative):
                 RESULTS[i]['result'] -= (integral * my_funcs.MULTIPLIER);
