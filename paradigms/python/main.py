@@ -7,6 +7,9 @@ import my_funcs
 import methods
 import random
 
+
+# GLOBAL DATA
+# ======================================
 NUM_METHODS = 4;
 
 SIN_PATTERN = '^[\d|.]*sin\(x\)$';
@@ -34,11 +37,7 @@ N_INTERVALS = 100000;
 METHOD_NAMES = [ 'Rectangles Method', 'Trapezes Method',
     'Simspons Method', 'Monte Carlos Method' ];
 
-
-METHODS = { METHOD_NAMES[0]: methods.RectanglesMethod(),
-        METHOD_NAMES[1]: methods.TrapezeMethod(),
-        METHOD_NAMES[2]: methods.SimpsonsMethod(),
-        METHOD_NAMES[3]: methods.MonteCarloMethod() };
+METHODS = {};
 
 RESULTS = [
     { 'result': 0, 'deviation': 0 },
@@ -50,14 +49,13 @@ FUNCTION_PATTERNS = [ SIN_PATTERN, COS_PATTERN, TAN_PATTERN,
     SQRT_PATTERN, LN_PATTERN, LOG10_PATTERN, LOG2_PATTERN,
     EXP_PATTERN, POW_PATTERN, EXPY_PATTERN, CONST_PATTERN ];
 
-
-
 FUNCTIONS = { 0: my_funcs.my_sin, 1: my_funcs.my_cos, 2: my_funcs.my_tan, 3: my_funcs.my_sqrt,
     4: my_funcs.my_log, 5: my_funcs.my_log10, 6: my_funcs.my_log2, 7: my_funcs.my_expe,
     8: my_funcs.my_pow, 9: my_funcs.my_expy, 10: my_funcs.my_const };
 
 
-
+# FUNCTIONS
+# =====================================
 def main():
     ret = 0;
 
@@ -137,8 +135,7 @@ def calculate_function(arg, negative):
     if (None != fun):
         # Calculate integrals
         for i in range(0, NUM_METHODS):
-            integral = METHODS[METHOD_NAMES[i]].Calculate(LOWER_BOUND, UPPER_BOUND, fun, N_INTERVALS);
-
+            integral = METHODS[i].Calculate(fun);
 
             if (negative):
                 RESULTS[i]['result'] -= (integral * my_funcs.MULTIPLIER);
@@ -178,10 +175,16 @@ def init_env(cmd_args):
 
         N_INTERVALS = int(cmd_args[3], 10);
 
+    # clear the results structure
     for i in range(0, NUM_METHODS):
         RESULTS[i]['deviation'] = 0;
         RESULTS[i]['result'] = 0;
 
+    # fill the methods dictionary
+    METHODS[0] = methods.RectanglesMethod(LOWER_BOUND, UPPER_BOUND, N_INTERVALS)
+    METHODS[1] = methods.TrapezeMethod(LOWER_BOUND, UPPER_BOUND, N_INTERVALS)
+    METHODS[2] = methods.SimpsonsMethod(LOWER_BOUND, UPPER_BOUND, N_INTERVALS)
+    METHODS[3] = methods.MonteCarloMethod(LOWER_BOUND, UPPER_BOUND, N_INTERVALS)
 
     return ret;
 
