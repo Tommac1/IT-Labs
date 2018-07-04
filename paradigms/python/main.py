@@ -175,16 +175,18 @@ def init_env(cmd_args):
 
         N_INTERVALS = int(cmd_args[3], 10);
 
+        # fill the methods dictionary
+        METHODS[0] = methods.RectanglesMethod(LOWER_BOUND, UPPER_BOUND, N_INTERVALS)
+        METHODS[1] = methods.TrapezeMethod(LOWER_BOUND, UPPER_BOUND, N_INTERVALS)
+        METHODS[2] = methods.SimpsonsMethod(LOWER_BOUND, UPPER_BOUND, N_INTERVALS)
+        METHODS[3] = methods.MonteCarloMethod(LOWER_BOUND, UPPER_BOUND, N_INTERVALS)
+
+
     # clear the results structure
     for i in range(0, NUM_METHODS):
         RESULTS[i]['deviation'] = 0;
         RESULTS[i]['result'] = 0;
 
-    # fill the methods dictionary
-    METHODS[0] = methods.RectanglesMethod(LOWER_BOUND, UPPER_BOUND, N_INTERVALS)
-    METHODS[1] = methods.TrapezeMethod(LOWER_BOUND, UPPER_BOUND, N_INTERVALS)
-    METHODS[2] = methods.SimpsonsMethod(LOWER_BOUND, UPPER_BOUND, N_INTERVALS)
-    METHODS[3] = methods.MonteCarloMethod(LOWER_BOUND, UPPER_BOUND, N_INTERVALS)
 
     return ret;
 
