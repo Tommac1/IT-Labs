@@ -18,12 +18,12 @@ typedef double (*exc_fun)(double x);
 
 static double ex1_fun(double x)
 {
-    return (0.7 * sin(2.0 * M_PI * 4.0 * (x / 100.0) + 7.0 * M_PI / 9.0) * x);
+    return (0.45/(x + 20.0) * cos(2.0 * M_PI * 20.0 * (x / 600.0) - 2.0 * M_PI));
 }
 
 static double ex2_yn(double x)
 {
-    return (sin(8.0 * M_PI * (x / 100.0)) * cos(10.0 * x));
+    return (cos(20.0 * x) / 4.0);
 }
 
 static double ex2a_fun(double x)
@@ -31,7 +31,7 @@ static double ex2a_fun(double x)
     double fx = ex1_fun(x);
     double yx = ex2_yn(x);
 
-    return (yx - 3000.0 * abs(fx));
+    return (yx * (sin(0.6 * M_PI * x / 600.0) * fabs(fx)));
 }
 
 static double ex2b_fun(double x)
@@ -39,64 +39,63 @@ static double ex2b_fun(double x)
     double fx = ex1_fun(x);
     double yx = ex2_yn(x);
 
-    return (fx * (abs(yx) + 2.6) * (fx - yx));
+    return (sqrt(fabs(fx)) * cos(yx/2.0));
 }
 
 static double ex3_fun(double x)
 {
     double result = 0.0;
 
-    if (x >= 0 && x < 0.4)
-        result = (pow(0.8, x) - 1.0);
-    else if (x >= 0.4 && x < 0.6)
-        result = -1.8 * x * cos(16.0 * M_PI * (x/4000.0) + M_PI);
-    else if (x >= 0.6 && x < 0.8)
-        result = 0.72 * x;
-    else if (x >= 0.8 && x < 1.0)
-        result = 0.29 * pow(x, 8) * sin(31.0 * M_PI * (x/4000.0) + 0.55);
+    if (x >= 0 && x < 0.2)
+        result = (4.0 + (-x * sin(18000.0 * M_PI * (x - 0.2)/8000.0) + 
+                    cos(45000 * M_PI * (x - 0.2)/8000.0)));
+    else if (x >= 0.2 && x < 0.7)
+        result = 1.0/x;
+    else if (x >= 0.7 && x < 1.0)
+        result = ((0.5 * cos(12.0 * M_PI * 3000.0 * (x - 0.7)/8000.0)) + 0.92);
             
     return result;
 }
 
 static double ex4_sum(double t, int n)
 {
-    return (sin(0.5 * M_PI * t * (double)n) / (2.0 * (double)n + 1.0));
+    return ((pow(-1.0, (double)n)/pow((double)n, 2.0)) * cos((2.0 * M_PI * (double)n * t) / 8000.0));
 }
 
 static double ex4a_fun(double t)
 {
     double result = 0.0;
-    int n = 0;
-    const int H = 2;
+    int n = 1;
+    const int H = 5;
 
-    for (n = 0; n <= H - 1; ++n)
+    for (n = 1; n <= H; ++n)
         result += ex4_sum(t, n);
 
-    return ((4.0 / M_PI) * result);
+    return ((pow(M_PI, 2.0) / 3.0) + (4.0 * result));
 }
 
 static double ex4b_fun(double t)
 {
     double result = 0.0;
-    int n = 0;
-    const int H = 25;
+    int n = 1;
+    const int H = 50;
 
-    for (n = 0; n <= H - 1; ++n)
+    for (n = 1; n <= H; ++n)
         result += ex4_sum(t, n);
 
-    return ((4.0 / M_PI) * result);
+    return ((pow(M_PI, 2.0) / 3.0) + (4.0 * result));
 }
 
 static double ex4c_fun(double t)
 {
     double result = 0.0;
-    int n = 0;
+    int n = 1;
     const int H = 100;
 
-    for (n = 0; n <= H - 1; ++n)
+    for (n = 1; n <= H; ++n)
         result += ex4_sum(t, n);
 
-    return ((4.0 / M_PI) * result);
+    return ((pow(M_PI, 2.0) / 3.0) + (4.0 * result));
 }
 
 // =========================================================
@@ -107,7 +106,7 @@ static void generate_sine(double period, double freq_s, struct sine_wave *out, e
 {
     int i = 0;
     int samples = freq_s * period;
-    double step = period / freq_s;
+    double step = 1.0 / freq_s;
     double x_val = 0.0;
 
     out->values[1] = malloc(sizeof(double) * samples);
@@ -143,7 +142,7 @@ static void print_sine(struct sine_wave *sw, int file)
     assert(fp);
 
     for (i = 0; i < sw->samples; ++i)
-        fprintf(fp, "%.5f, %.5f\n", sw->values[0][i], sw->values[1][i]);
+        fprintf(fp, "%.15f, %.15f\n", sw->values[0][i], sw->values[1][i]);
 
     fclose(fp);
 }
@@ -156,8 +155,8 @@ int main(int argc, char *argv[])
 {
     exc_fun funcs[PLOTS_NUM] = { ex1_fun, ex2a_fun, ex2b_fun, ex3_fun, 
         ex4a_fun, ex4b_fun, ex4c_fun };
-    double freqs_s[PLOTS_NUM] = { 100.0, 100.0, 100.0, 4000.0, 10000.0, 10000.0, 10000.0 };
-    double periods[PLOTS_NUM] = { 1.0, 1.0, 1.0, 1.0, 4.0, 4.0, 4.0 };
+    double freqs_s[PLOTS_NUM] = { 600.0, 600.0, 600.0, 8000.0, 8000.0, 8000.0, 8000.0 };
+    double periods[PLOTS_NUM] = { 2.0, 2.0, 2.0, 1.0, 2.0, 2.0, 2.0 };
 
     int i = 0;
     struct sine_wave sw;
