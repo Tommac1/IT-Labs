@@ -43,3 +43,26 @@ My problem: calculate integral between `a` and `b` of elementary arithmetic func
 - Trapeze's Method
 - Simpson's Method
 - Monte Carlo.
+## data structures
+Write programs that implement:
+- Array of pointers to structures
+- Two-sided circular linked list
+- BST
+- AVL
+- List vs BST vs AVL comparison
+- AVL vs STL Set comparison
+## numeric methods
+Implement some common algorithms in numeric methods using MATLAB.
+## optimalization methods
+Implement some common algorithms related to optimalization (finding local minimum of function) using MATLAB.
+## modelling and system simulation
+Simulate some common problems using MATLAB+Simulink environment.
+## concurrent programming
+- Write program, that implemenets matrix multiplication using std::thread.
+## basis of data transmission
+- Write program, that computes some basic math functions and draw thier plots.
+## image processing
+Solve common tasks of image processing (image addition, histogram, brightness/contrast measure, etc.) in MATLAB.
+## LaTeX
+Write CV, polish letter, english letter and front page of diploma in LaTeX environment.
+
