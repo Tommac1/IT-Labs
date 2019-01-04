@@ -139,22 +139,29 @@ void worker_job(int id)
     int x_area = 0;
     int y_area = 0;
 
+//    std::this_thread::sleep_for(std::chrono::nanoseconds(id));
+
     while (tile < 16) {
-        x_area = tile / 4;
-        y_area = tile % 4;
-
-        std::cout   << "id: " << id 
-                    << ", tile: " << tile 
-                    << ", x = " << x_area * x_step 
-                    << ", y = " << y_area * y_step 
-                    << std::endl; 
-
-        mask_area(id, (x_area * x_step), (y_area * y_step));
-
         mut.lock();
-        tile++;
+        if (tile < 16) {
+            x_area = tile / 4;
+            y_area = tile % 4;
+
+            std::cout   << "id: " << id 
+                        << ", tile: " << tile 
+                        << ", x = " << x_area * x_step 
+                        << ", y = " << y_area * y_step 
+                        << std::endl; 
+
+            mask_area(id, (x_area * x_step), (y_area * y_step));
+
+            tile++;
+        }
         mut.unlock();
-        //std::this_thread::sleep_for(std::chrono::nanoseconds(1));
+
+        // delay to prevent one thread unlock() 
+        // and intantly lock() afterwards
+        for (x_area = 0; x_area < 9000; ++x_area) ;
     }
 }
 
@@ -174,8 +181,8 @@ void spawn_workers()
 int main()
 {
     int ret = 0;
-    std::ifstream file_in("santa.ppm", std::fstream::in | std::fstream::binary);
-    std::ofstream file_out("santa_masked.ppm", std::fstream::binary);
+    std::ifstream file_in("vladi.ppm", std::fstream::in | std::fstream::binary);
+    std::ofstream file_out("vladi_masked.ppm", std::fstream::binary);
 
 
     if (file_in.is_open()) {
