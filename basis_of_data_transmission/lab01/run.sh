@@ -1,22 +1,5 @@
 #!/bin/bash
 
-# compile
-gcc -Wall -g -o 01 01.c -lm
+# compile, run, make plots and display
+gcc -Wall -g -o lab01 lab01.c -lm && ./lab01 && ./make_plot.sh && feh plot*.png
 
-# run
-if [ $? == 0 ]
-then
-    ./01
-fi
-
-#make plots
-if [ $? == 0 ]
-then
-    ./make_plot.sh
-fi
-
-# show plots
-if [ $? == 0 ]
-then
-    feh plot*.png
-fi

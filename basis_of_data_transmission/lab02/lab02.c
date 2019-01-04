@@ -171,15 +171,15 @@ int round_pow2(int v)
 	return v;
 }
 
-static void dft_sum(double *out, int k, int N, exc_fun x)
+static void dft_sum(double *out, int k, int N, double *x)
 {
     double fi = 0.0;
     int n;
 
     for (n = 0; n < N; ++n) {
         fi = (2.0 * M_PI * (double)k * (double)n / (double)N);
-        out[0] += x((double)n) * cos(fi); // Re
-        out[1] += -x((double)n) * sin(fi); // Im
+        out[0] += (x[n] * cos(fi)); // Re
+        out[1] += (-x[n] * sin(fi)); // Im
     }
 }
 
@@ -190,7 +190,7 @@ static void dft(exc_fun xn, struct sine_wave *fw, double fs)
 
     for (i = 0; i < fw->samples / 2 - 1; ++i) {
         (i & 1023) ? : printf("%d\n", i);
-        dft_sum(z, i, fw->samples, xn);
+        dft_sum(z, i, fw->samples, fw->values[1]);
         fw->values[0][i] = ((double)i * (fs / (double)fw->samples));
         fw->values[1][i] = sqrt(pow(z[0], 2.0) + pow(z[1], 2.0));
         fw->values[1][i] = 10.0 * log10(fw->values[1][i]);
@@ -207,7 +207,7 @@ int main(int argc, char *argv[])
 {
     const exc_fun funcs[PLOTS_NUM] = { ex1_fun, ex2a_fun, ex2b_fun, ex3_fun, 
         ex4a_fun, ex4b_fun, ex4c_fun };
-    const double freqs_s[PLOTS_NUM] = { 600.0, 600.0, 600.0, 8000.0, 8000.0, 8000.0, 8000.0 };
+    const double freqs_s[PLOTS_NUM] = { 600.0, 600.0, 600.0, 800.0, 800.0, 800.0, 800.0 };
     const double periods[PLOTS_NUM] = { 2.0, 2.0, 2.0, 1.0, 2.0, 2.0, 2.0 };
 
     double time_used;
@@ -221,7 +221,7 @@ int main(int argc, char *argv[])
     for (i = 0; i < PLOTS_NUM; ++i) {
         create_sine(&sw, freqs_s[i] * periods[i]);
         generate_sine(periods[i], freqs_s[i], &sw, funcs[i]);
-        //print_sine(&sw, i, 0);
+        print_sine(&sw, i, 0);
 
         
         create_sine(&fw, freqs_s[i] * periods[i]);
@@ -236,12 +236,12 @@ int main(int argc, char *argv[])
 
         sw.samples /= periods[i];
         kiss_fftr_cfg kf_cfg = kiss_fftr_alloc(sw.samples, 0, NULL, NULL);
-        kiss_fft_scalar *in = calloc(sw.samples, sizeof(kiss_fft_scalar));
+        kiss_fft_scalar *in = malloc(sw.samples * sizeof(kiss_fft_scalar));
 
         for (j = 0; j < sw.samples; ++j)
             in[j] = sw.values[1][j];
 
-        kiss_fft_cpx *out = calloc(sw.samples/2+1, sizeof(kiss_fft_cpx));
+        kiss_fft_cpx *out = malloc((sw.samples/2+1) * sizeof(kiss_fft_cpx));
 
         start = clock();
         kiss_fftr(kf_cfg, in, out);
