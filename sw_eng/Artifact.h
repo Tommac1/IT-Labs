@@ -33,14 +33,24 @@ class Artifact {
 public:
     static Artifact *createArtifact(ArtifactType type, std::string name, 
             User *creator, Database *db);
+    static Artifact *createArtifact(ArtifactType type, std::string name, 
+            User *creator, Database *db, Artifact *parent);
 
-    ~Artifact();
 
     int getId();
+    std::string getName();
+    User *getCreator();
+    User *getOwner();
+    Artifact *getParent();
+    ArtifactStatus getStatus();
+    ArtifactType getType();
 
     void setParent(Artifact *parent);
+    void addChild(Artifact *child);
+
+    ~Artifact() { };
 private:
-    Artifact(ArtifactType _t, std::string _n, User *_c, int _id, Database *db) 
+    Artifact(ArtifactType _t, std::string _n, User *_c, int _id) 
             : name(_n), id(_id), owner(_c), creator(_c), type(_t) { 
         status = New;
     };
@@ -48,11 +58,11 @@ private:
     std::string name;
     int id;
     int prio;
-    Artifact *parent;
+    Artifact *parent = nullptr;
     std::vector<Label *> labels;
     ArtifactStatus status;
-    User *owner;
-    User *creator;
+    User *owner = nullptr;
+    User *creator = nullptr;
     std::vector<Artifact *> children;
     ArtifactType type;
 //    std::vector<Observer *> subscribers;

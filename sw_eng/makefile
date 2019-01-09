@@ -15,11 +15,11 @@ CPP_FLAGS=-Wall -std=c++17 -pedantic -g -pthread
 INCLUDE_PATHS=$(addprefix -I, \
 			$(JSON_INCLUDE_PATH) $(NLOHMANN_PATH))
 
-$(TARGET): $(OBJDIR) | $(OBJ)
+$(TARGET): $(OBJDIR) $(OBJ) $(HEADERS)
 	$(CC) -o $@ $(OBJ) $(CPP_FLAGS) $(INCLUDE_PAJTHS)
 
 $(OBJDIR)/%.o: %.cpp
-	$(CC) -c -o $@ $^ $(CPP_FLAGS) $(INCLUDE_PATHS)
+	$(CC) -c -o $@ $< $(CPP_FLAGS) $(INCLUDE_PATHS)
 
 $(OBJDIR):
 	mkdir -p $(OBJDIR)

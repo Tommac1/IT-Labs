@@ -18,15 +18,18 @@
 #include "User.h"
 #include "Artifact.h"
 #include "Project.h"
+#include "Utils.h"
 
 using json = nlohmann::json;
 
 class Administrator;
+class Artifact;
 
 class Database {
 public:
     static Database *createDatabase(Administrator *admin, std::string serverName);
     int addUser(User *user);
+    int addArtifact(Artifact *art);
 
     int getUsersSize();
     int getArtifactsSize();
@@ -43,10 +46,13 @@ private:
     std::thread *backupThread;
     std::mutex *data_mutex;
 
+    const std::string hash_key = "INZ_OPR_IS_THE_BEST";
+    std::string hash(std::string text, std::string key);
 
     void backupDatabase();
     int writeToDatabase();
     int writeUsersToDatabase(json &data);
+    void writeUserToDatabase(User *user, json &data);
     int writeAdminToDatabase(json &data);
     int writeArtifactsToDatabase(json &data);
 

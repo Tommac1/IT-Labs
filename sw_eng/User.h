@@ -27,7 +27,7 @@ private:
     std::string password;
     std::string email;
     int id;
-    Permission *permission;
+    Permission *permission = nullptr;
     User *lineManager;
 //    std::vector<Notification *> notificationBox;
 //    Administrator *admin;

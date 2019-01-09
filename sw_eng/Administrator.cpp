@@ -25,9 +25,11 @@ User *Administrator::createUser(std::string username,
     int validation = validateUserCredentials(username, password, email);
     if (!validation) {
         new_user = new User(username, password, email, db->getUsersSize());
-        if (manager)
-            givePermission(new_user);
-        db->addUser(new_user);
+        if (new_user != nullptr) {
+            if (manager)
+                givePermission(new_user);
+            db->addUser(new_user);
+        }
     }
 
     return new_user;
@@ -54,7 +56,7 @@ int Administrator::givePermission(User *user)
 {
     int result = 0;
     Permission *perm = new Permission();
-    if (user->attachPermission(perm)) {
+    if (!perm || user->attachPermission(perm)) {
         delete perm;
         result = -1;
     }
