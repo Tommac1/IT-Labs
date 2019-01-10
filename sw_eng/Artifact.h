@@ -3,16 +3,21 @@
 
 #include <string>
 #include <vector>
+#include <mutex>
 
 #include "Database.h"
 #include "User.h"
+#include "Label.h"
+#include "Observer.h"
+#include "Notification.h"
 
 class User;
 class Database;
+class Observer;
 
 enum ArtifactType {
-    Functionality, Story,
-    Task, Defect
+    AT_Functionality, AT_Story,
+    AT_Task, AT_Defect
 };
 
 const std::string ArtifactTypeString[4] = {
@@ -20,8 +25,8 @@ const std::string ArtifactTypeString[4] = {
 };
 
 enum ArtifactStatus {
-    New, Analysis, Implementation,
-    Validation, Done, Invalid
+    AS_New, AS_Analysis, AS_Implementation,
+    AS_Validation, AS_Done, AS_Invalid
 };
 
 const std::string ArtifactStatusString[6] = {
@@ -44,28 +49,38 @@ public:
     Artifact *getParent();
     ArtifactStatus getStatus();
     ArtifactType getType();
+    std::vector<Observer *> *getSubscribers();
 
     void setParent(Artifact *parent);
     void addChild(Artifact *child);
+    void addSubscriber(User *u);
+    int setStatus(ArtifactStatus new_status);
 
     ~Artifact() { };
 private:
     Artifact(ArtifactType _t, std::string _n, User *_c, int _id) 
             : name(_n), id(_id), owner(_c), creator(_c), type(_t) { 
-        status = New;
+        status = AS_New;
+        data_mutex = new std::mutex();
+        addSubscriber(creator);
+        if (owner != creator)
+            addSubscriber(owner);
     };
+
+    void notifySubscribers(std::string);
 
     std::string name;
     int id;
     int prio;
     Artifact *parent = nullptr;
     std::vector<Label *> labels;
-    ArtifactStatus status;
+    ArtifactStatus status = AS_New;
     User *owner = nullptr;
     User *creator = nullptr;
     std::vector<Artifact *> children;
     ArtifactType type;
-//    std::vector<Observer *> subscribers;
+    std::vector<Observer *> subscribers;
+    std::mutex *data_mutex;
 };
 
 #endif

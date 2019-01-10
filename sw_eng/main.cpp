@@ -16,6 +16,7 @@
 int main(int argc, char *argv[])
 {
     std::cout << "hello\n";
+
     
     Administrator *admin = Administrator::createAdministrator("tomaszek", 
             "bajzel", "tomasz.bajzel@buziaczek.pl");
@@ -27,11 +28,20 @@ int main(int argc, char *argv[])
     User *user2 = admin->createUser("asd", "dsa", 
             "asd.dsa@com", db, true);
 
-    Artifact *art1 = Artifact::createArtifact(Story, "moj nowy artefakt!", 
+    Artifact *art1 = Artifact::createArtifact(AT_Story, "moje nowe story!!", 
             user1, db);
 
-    Artifact *art2 = Artifact::createArtifact(Story, "moje nowe story", 
+    Artifact *art2 = Artifact::createArtifact(AT_Task, "moj nowy tasak!", 
             user2, db, art1);
+
+    art2->addSubscriber(user1);
+    art2->addSubscriber(user1);
+
+    art1->setStatus(AS_Analysis);
+    art2->setStatus(AS_Implementation);
+
+   // user1->receiveNotifications();
+   // user2->receiveNotifications();
 
     while (1) { }
 

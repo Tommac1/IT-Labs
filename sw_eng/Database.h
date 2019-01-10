@@ -24,6 +24,7 @@ using json = nlohmann::json;
 
 class Administrator;
 class Artifact;
+class Label;
 
 class Database {
 public:
@@ -44,7 +45,8 @@ private:
     std::vector<User *> users;
     Administrator *admin;
     std::thread *backupThread;
-    std::mutex *data_mutex;
+    std::mutex *user_data_mutex;
+    std::mutex *arts_data_mutex;
 
     const std::string hash_key = "INZ_OPR_IS_THE_BEST";
     std::string hash(std::string text, std::string key);
@@ -55,6 +57,8 @@ private:
     void writeUserToDatabase(User *user, json &data);
     int writeAdminToDatabase(json &data);
     int writeArtifactsToDatabase(json &data);
+    void writeArtifactToDatabase(Artifact *art, json &data);
+
 
     std::thread *spawn();
     Database(Administrator *_admin, std::string _servName) : serverName(_servName), admin(_admin) { };

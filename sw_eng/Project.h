@@ -8,8 +8,8 @@
 #include "Artifact.h"
 
 enum ProjectStatus {
-    New, Preparation, In_Progress,
-    Integration, Finished
+    PS_New, PS_Preparation, PS_In_Progress,
+    PS_Integration, PS_Finished
 };
 
 const std::string ProjectStatusString[5] = {
