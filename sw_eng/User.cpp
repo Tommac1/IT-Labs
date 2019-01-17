@@ -1,5 +1,7 @@
 #include "User.h"
 
+int User::usersInSystem = 0;
+
 int User::attachPermission(Permission *perm) 
 {
     int result = -1;
@@ -10,10 +12,43 @@ int User::attachPermission(Permission *perm)
     return result;
 }
 
-void User::addNotification(Artifact *art, std::string &action)
+Project *User::createProject(const std::string &name, Database *db)
 {
-    std::string text = art->getName() + ": " + action;
+    Project *proj = Project::createProject(name, this);
+
+    if (proj) {
+        if (db->addProject(proj)) {
+            delete proj;
+            proj = nullptr;
+        }
+    }
+
+    return proj;
+}
+
+void User::addNotification(Project *proj, const std::string &action)
+{
+    std::string text = "";
+    if (proj != nullptr)
+        text = proj->getName() + ": ";
+    text += action;
     Notification *notif = new Notification(text);
+    notificationBox.push_back(notif);
+}
+
+void User::addNotification(Artifact *art, const std::string &action)
+{
+    std::string text = "";
+    if (art != nullptr)
+        text = art->getName() + ": ";
+    text += action;
+    Notification *notif = new Notification(text);
+    notificationBox.push_back(notif);
+}
+
+void User::addNotification(std::string &action)
+{
+    Notification *notif = new Notification(action);
     notificationBox.push_back(notif);
 }
 
@@ -59,4 +94,9 @@ Permission *User::getPermission()
 std::vector<Notification *> *User::getNotifications()
 {
     return &notificationBox;
+}
+
+int User::getUsersInSystem()
+{
+    return usersInSystem;
 }

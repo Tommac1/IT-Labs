@@ -11,12 +11,6 @@ Administrator *Administrator::createAdministrator(std::string username,
     return self;
 }
 
-Administrator::Administrator(std::string u, std::string p, std::string e)
-    : username(u), password(p), email(e)
-{
-
-}
-
 User *Administrator::createUser(std::string username, 
         std::string password, std::string email, Database *db, bool manager)
 {
@@ -24,7 +18,7 @@ User *Administrator::createUser(std::string username,
 
     int validation = validateUserCredentials(username, password, email);
     if (!validation) {
-        new_user = new User(username, password, email, db->getUsersSize());
+        new_user = new User(username, password, email);
         if (new_user != nullptr) {
             if (manager)
                 givePermission(new_user);
@@ -39,7 +33,7 @@ int Administrator::validateUserCredentials(std::string username,
         std::string password, std::string email)
 {
     int result = 0;
-    const std::string email_pattern = "^([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})$";
+    const std::string email_pattern = "^([a-zA-Z0-9_.\\-])+@([a-zA-Z0-9_.\\-])+\\.([a-zA-Z])+$";
     const std::string username_pattern = "^([a-zA-Z0-9_\\-])+$";
     std::regex username_regex(username_pattern);
 
@@ -47,6 +41,13 @@ int Administrator::validateUserCredentials(std::string username,
     if (!std::regex_search(username, sm, username_regex)) {
         result = -1;
         std::cout << "username match failed: " << username << "\n";
+    }
+
+    std::regex email_regex(email_pattern);
+
+    if (!std::regex_search(email, sm, email_regex)) {
+        result = -1;
+        std::cout << "email match failed: " << email << "\n";
     }
 
     return result;

@@ -1,19 +1,25 @@
 #include "Artifact.h"
 
-Artifact *Artifact::createArtifact(ArtifactType type, std::string name, User *creator,
-        Database *db)
-{
-    Artifact *art = new (std::nothrow) Artifact(type, name, creator, db->getArtifactsSize()); 
+int Artifact::artifactsInSystem = 0;
 
-    if (art) {
-        if (db->addArtifact(art)) {
-            delete art;
-            art = nullptr;
-        }
-        else {
-            std::string notif = "New " + ArtifactTypeString[type] + " " 
-                + std::to_string(art->getId()) + " created!";
-            art->notifySubscribers(notif);
+
+Artifact *Artifact::createArtifact(ArtifactType type, std::string name, User *creator,
+        Project *proj, Database *db)
+{
+    Artifact *art = nullptr;
+    if (creator != nullptr) {
+        art = new (std::nothrow) Artifact(type, name, proj, creator, artifactsInSystem++); 
+
+        if (art) {
+            if (db->addArtifact(art)) {
+                delete art;
+                art = nullptr;
+            }
+            else {
+                std::string notif = "New " + ArtifactTypeString[type] + " " 
+                    + std::to_string(art->getId()) + " created!";
+                art->notifySubscribers(notif);
+            }
         }
     }
 
@@ -21,24 +27,36 @@ Artifact *Artifact::createArtifact(ArtifactType type, std::string name, User *cr
 }
 
 Artifact *Artifact::createArtifact(ArtifactType type, std::string name, User *creator,
-        Database *db, Artifact *parent)
+        Project *proj, Database *db, Artifact *parent)
 {
-    Artifact *art = new (std::nothrow) Artifact(type, name, creator, db->getArtifactsSize()); 
+    Artifact *art = nullptr;
+    bool gotPermission = true;
+    const std::string text = "You do not have permission to create: " + ArtifactTypeString[type];
 
-    if (art) {
-        if (db->addArtifact(art)) {
-            delete art;
-            art = nullptr;
+    if (creator != nullptr) {
+        art = new (std::nothrow) Artifact(type, name, proj, creator, artifactsInSystem++); 
+
+        if (art) {
+            if ((type == AT_Functionality || type == AT_Story) 
+                    && creator->getPermission() == nullptr) {
+                gotPermission = false;
+                creator->addNotification((Artifact *)nullptr, text);
+            }
+            
+            if (gotPermission == false || db->addArtifact(art)) {
+                delete art;
+                art = nullptr;
+            }
+            else {
+                art->setParent(parent);
+                std::string notif = "New " + ArtifactTypeString[type] + " " 
+                    + std::to_string(art->getId()) + " created!";
+                art->notifySubscribers(notif);
+            }
         }
         else {
-            art->setParent(parent);
-            std::string notif = "New " + ArtifactTypeString[type] + " " 
-                + std::to_string(art->getId()) + " created!";
-            art->notifySubscribers(notif);
+            art = nullptr;
         }
-    }
-    else {
-        art = nullptr;
     }
 
     return art;
@@ -112,13 +130,42 @@ int Artifact::setStatus(ArtifactStatus new_status)
             result = 0;
         }
     }
+
+    if (!result) {
+        std::string notif = ArtifactTypeString[getType()] + " " 
+            + std::to_string(getId()) + " got new status: " 
+            + ArtifactStatusString[status];
+
+        notifySubscribers(notif);
+
+    }
+
     return result;
+}
+
+void Artifact::setOwner(User *new_owner)
+{
+    if (new_owner != nullptr && new_owner != owner) {
+        owner = new_owner;
+
+        std::string notif = ArtifactTypeString[getType()] + " " 
+            + std::to_string(getId()) + " got new owner: " 
+            + owner->getUsername();
+
+        notifySubscribers(notif);
+    }
 }
 
 void Artifact::setParent(Artifact *_parent)
 {
     parent = _parent;
     _parent->addChild(this);
+
+    std::string notif = ArtifactTypeString[getType()] + " " 
+        + std::to_string(getId()) + " got new parent: " 
+        + _parent->getName();
+
+    notifySubscribers(notif);
 }
 
 int Artifact::getId()
@@ -159,4 +206,9 @@ User *Artifact::getCreator()
 std::vector<Observer *> *Artifact::getSubscribers()
 {
     return &subscribers;
+}
+
+Project *Artifact::getProject()
+{
+    return project;
 }

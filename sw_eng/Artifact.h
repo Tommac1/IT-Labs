@@ -10,6 +10,7 @@
 #include "Label.h"
 #include "Observer.h"
 #include "Notification.h"
+#include "Project.h"
 
 class User;
 class Database;
@@ -37,9 +38,9 @@ const std::string ArtifactStatusString[6] = {
 class Artifact {
 public:
     static Artifact *createArtifact(ArtifactType type, std::string name, 
-            User *creator, Database *db);
+            User *creator, Project *proj, Database *db);
     static Artifact *createArtifact(ArtifactType type, std::string name, 
-            User *creator, Database *db, Artifact *parent);
+            User *creator, Project *proj, Database *db, Artifact *parent);
 
 
     int getId();
@@ -50,21 +51,21 @@ public:
     ArtifactStatus getStatus();
     ArtifactType getType();
     std::vector<Observer *> *getSubscribers();
+    Project *getProject();
 
     void setParent(Artifact *parent);
+    void setOwner(User *new_owner);
     void addChild(Artifact *child);
     void addSubscriber(User *u);
     int setStatus(ArtifactStatus new_status);
 
     ~Artifact() { };
 private:
-    Artifact(ArtifactType _t, std::string _n, User *_c, int _id) 
-            : name(_n), id(_id), owner(_c), creator(_c), type(_t) { 
+    Artifact(ArtifactType _t, std::string _n, Project *_p, User *_c, int _id) 
+            : name(_n), id(_id), owner(_c), creator(_c), type(_t), project(_p) { 
         status = AS_New;
         data_mutex = new std::mutex();
         addSubscriber(creator);
-        if (owner != creator)
-            addSubscriber(owner);
     };
 
     void notifySubscribers(std::string);
@@ -79,8 +80,11 @@ private:
     User *creator = nullptr;
     std::vector<Artifact *> children;
     ArtifactType type;
+    Project *project = nullptr;
     std::vector<Observer *> subscribers;
     std::mutex *data_mutex;
+
+    static int artifactsInSystem;
 };
 
 #endif

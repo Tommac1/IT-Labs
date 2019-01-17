@@ -27,8 +27,10 @@ public:
 
     ~Administrator();
 private:
-    Administrator(std::string username,
-            std::string password, std::string email);
+    friend class Database;
+
+    Administrator(std::string u, std::string p, std::string e)
+            : username(u), password(p), email(e) { };
 
     static Administrator *self;
 
