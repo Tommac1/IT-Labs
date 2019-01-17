@@ -99,6 +99,7 @@ void Artifact::notifySubscribers(std::string action)
 int Artifact::setStatus(ArtifactStatus new_status)
 {
     int result = -1;
+
     if (new_status == AS_Analysis) {
         if ((status == AS_New) || (status == AS_Implementation) 
                 || (status == AS_Validation) || (status == AS_Done)) {
@@ -119,9 +120,18 @@ int Artifact::setStatus(ArtifactStatus new_status)
         }
     }
     else if (new_status == AS_Done) {
-        if (status == AS_Validation) {
-            status = new_status;
-            result = 0;
+        if (allChildrenAreClosed()) {
+            if (status == AS_Validation) {
+                status = new_status;
+                result = 0;
+            }
+        }
+        else {
+            std::string notif = ArtifactTypeString[getType()] + " " 
+                + std::to_string(getId()) 
+                + " cannot close this item. Not all children are resolved.";
+
+            notifySubscribers(notif);
         }
     }
     else if (new_status == AS_Invalid) {
@@ -137,7 +147,20 @@ int Artifact::setStatus(ArtifactStatus new_status)
             + ArtifactStatusString[status];
 
         notifySubscribers(notif);
+    }
 
+    return result;
+}
+
+int Artifact::allChildrenAreClosed()
+{
+    int result = 1;
+
+    for (auto &child : children) {
+        if (child->getStatus() != AS_Done) {
+            result = 0;
+            break;
+        }
     }
 
     return result;

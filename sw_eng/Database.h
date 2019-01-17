@@ -38,6 +38,8 @@ public:
     int getArtifactsSize();
     int getProjectsSize();
 
+    void backupNow();
+
     Administrator *getAdmin();
     void setAdmin(Administrator *new_adm);
 

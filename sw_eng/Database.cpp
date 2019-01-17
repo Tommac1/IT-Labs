@@ -32,7 +32,7 @@ int Database::importDatabase()
     is >> data;
 
     itemsImported += importAdmin(data);
-    itemsImported += importUsers(data);
+    //itemsImported += importUsers(data);
 
     return itemsImported;
 }
@@ -87,6 +87,13 @@ int Database::importAdmin(const json &data)
     }
 
     return result;
+}
+
+void Database::backupNow()
+{
+    int result = writeToDatabase();
+
+    std::cout << "Backup done. Items backupped: " << result << std::endl;
 }
 
 void Database::backupDatabase()

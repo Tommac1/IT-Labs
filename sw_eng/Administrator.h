@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <regex>
+#include <chrono>
 
 #include "Database.h"
 #include "User.h"
@@ -21,6 +22,8 @@ public:
     std::string getUsername();
     std::string getEmail();
     std::string getPassword();
+
+    void diagnose(Database *db);
 
     static Administrator *createAdministrator(std::string username,
             std::string password, std::string email);

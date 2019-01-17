@@ -69,6 +69,7 @@ private:
     };
 
     void notifySubscribers(std::string);
+    int allChildrenAreClosed();
 
     std::string name;
     int id;

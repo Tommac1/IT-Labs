@@ -53,6 +53,27 @@ int Administrator::validateUserCredentials(std::string username,
     return result;
 }
 
+void Administrator::diagnose(Database *db)
+{
+    int users = db->getUsersSize();
+    int arts = db->getArtifactsSize();
+    int projs = db->getProjectsSize();
+
+    std::cout << "Diagnosis started... ===========================\n";
+
+    std::cout << "Users count: " << users << std::endl;
+    std::cout << "Artifacts count: " << arts << std::endl;
+    std::cout << "Projects count: " << projs << std::endl;
+
+    auto begin = std::chrono::steady_clock::now();
+    db->backupNow();
+    auto end = std::chrono::steady_clock::now();
+
+    std::cout << "Backupping took: " 
+              << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() 
+              << "ms" << std::endl;
+}
+
 int Administrator::givePermission(User *user)
 {
     int result = 0;

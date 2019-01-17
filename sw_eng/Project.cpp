@@ -42,15 +42,22 @@ void Project::setManager(User *new_manager)
 
 void Project::addEngineer(User *eng)
 {
-    std::string username = eng->getUsername();
+    if (eng != nullptr) {
+        std::string username = eng->getUsername();
 
-    auto it = std::find_if(engineers.begin(), engineers.end(), 
-            [&username](User *obj) { return username == obj->getUsername(); } );
+        auto it = std::find_if(engineers.begin(), engineers.end(), 
+                [&username](User *obj) { return username == obj->getUsername(); } );
 
-    if (it == engineers.end()) {
-        addSubscriber(eng);
-        std::lock_guard<std::mutex> lock(*engs_data_mutex);
-        engineers.push_back(eng);
+        if (it == engineers.end()) {
+            addSubscriber(eng);
+            std::lock_guard<std::mutex> lock(*engs_data_mutex);
+            engineers.push_back(eng);
+        }
+        else {
+            std::cout << "Engineer (" << eng->getId() 
+                << ") is already in project: " << getName() << std::endl;
+
+        }
     }
 }
 
