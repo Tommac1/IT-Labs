@@ -3,9 +3,9 @@ CC=g++
 OBJDIR=.debug
 
 TARGET=main
-SRC=$(wildcard *.cpp)
-HEADERS=$(wildcard *.h)
-OBJ=$(addprefix $(OBJDIR)/, $(SRC:.cpp=.o))
+SRC=$(wildcard src/*.cpp)
+HEADERS=$(wildcard include/*.h)
+OBJ=$(addprefix $(OBJDIR)/src/, $(SRC:.cpp=.o))
 
 
 JSON_INCLUDE_PATH=/home/anon/Repositories/json/include

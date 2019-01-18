@@ -26,6 +26,7 @@ class Administrator;
 class Artifact;
 class Label;
 class Project;
+class User;
 
 class Database {
 public:

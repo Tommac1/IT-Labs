@@ -15,6 +15,7 @@
 class User;
 class Database;
 class Observer;
+class Label;
 
 enum ArtifactType {
     AT_Functionality, AT_Story,

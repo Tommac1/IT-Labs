@@ -29,10 +29,13 @@ int Database::importDatabase()
     json data;
 
     std::ifstream is(serverName);
-    is >> data;
 
-    itemsImported += importAdmin(data);
-    //itemsImported += importUsers(data);
+    if (is.is_open()) {
+        is >> data;
+
+        itemsImported += importAdmin(data);
+        //itemsImported += importUsers(data);
+    }
 
     return itemsImported;
 }
