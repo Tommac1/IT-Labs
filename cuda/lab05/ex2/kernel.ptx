@@ -1,0 +1,34 @@
+.version        2.1
+.target         sm_20
+
+.entry KERN (.param .u32 N, .param .align 8 .u64 x_val, .param .align 8 .u64 vect)
+{
+    .reg    .u32    max, idx;
+    .reg    .u64    ptr, off;
+    .reg    .pred   out;
+    .reg    .f32    y, tmp;
+    .reg    .b64    x;
+
+    ld.param.u32    max,    [N];            // max = N
+    ld.param.u64    ptr,    [vect];         // ptr = vect;
+    ld.param.u64    x,      [x_val];        // x = x_val
+    mov.u32         idx,    %tid.x;         // indx = threadIdx.x
+    mul.wide.u32    off,    idx,    4;      // off = ind * 4
+    add.s64         ptr,    ptr,    off;    // ptr = ptr + off
+    setp.ge.u32     out,    idx,    max;    // if (indx > max)
+@out bra            END;                    // goto END:
+
+    cvta.to.global.u64 x,   x;
+    ld.f32          tmp,    [x];            // tmp = *x
+    cvt.rn.f32.u32  y,      idx;            // y = i
+    lg2.approx.f32  tmp,    tmp;            // tmp = lg2(tmp)
+    mul.f32         tmp,    tmp,    y;      // tmp = y * tmp
+    ex2.approx.f32  tmp,    tmp;            // tmp = 2 ^ tmp
+    ld.f32          y,      [ptr];          // y = *ptr
+    mul.f32         tmp,    tmp,    y;      // tmp *= y
+
+    bar.sync 	    0;                      // __syncthreads()
+    atom.add.f32    y,      [x],    tmp;    // y = atomicAdd(x, tmp)
+END: exit;                                  // return
+}
+

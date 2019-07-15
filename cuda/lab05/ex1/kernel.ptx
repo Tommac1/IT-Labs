@@ -1,0 +1,26 @@
+.version        2.1
+.target         sm_20
+
+.entry KERN (.param .u32 N, .param .align 8 .u64 vect)
+{
+    .reg    .u32    max, indx;
+    .reg    .u64    ptr, ptr2, off;
+    .reg    .pred   out;
+    .reg    .f32    x, y, tmp;
+
+    ld.param.u32        max,    [N];            // max = N
+    ld.param.u64        ptr,    [vect];         // ptr = vect;
+    mov.u32             indx,   %tid.x;         // indx = threadIdx.x
+    mul.wide.u32        off,    indx,   4;      // off = ind * 4
+    add.s64             ptr,    ptr,   off;     // ptr = ptr + off
+    setp.ge.u32         out,    indx,   max;    // if(indx > max)
+@out bra                END;                    // goto END:
+    ld.global.f32       x,      [ptr];          // x = *ptr
+    cvt.rn.f32.u32      y,      indx;           // y = i
+    lg2.approx.ftz.f32  tmp,    x;              // tmp = lg2(x)
+    mul.ftz.f32         tmp,    tmp,    y;      // tmp = y * tmp
+    ex2.approx.ftz.f32  tmp,    tmp;            // tmp = 2 ^ tmp
+    st.global.f32       [ptr],  tmp;            // *ptr = tmp
+END: exit;                                      // return
+}
+

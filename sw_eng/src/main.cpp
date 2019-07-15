@@ -19,22 +19,22 @@ int main(int argc, char *argv[])
 
     Database *db = Database::createDatabase(nullptr, "database.json");
     Administrator *admin = Administrator::createAdministrator("tomaszek", 
-            "bajzel", "tomasz.bajzel@buziaczek.pl");
+            "krupa", "tomasz.krupa@buziaczek.pl");
     db->setAdmin(admin);
 
     admin->diagnose(db);
 
-    User *user1 = admin->createUser("manager1", "dupsko123", 
-            "tomasz.wpierdol@gmail.com", db, true);
+    User *user1 = admin->createUser("manager1", "mngr1", 
+            "tomasz.managier@gmail.com", db, true);
     User *user2 = admin->createUser("dev1", "dsa", 
             "asd.dsa@com.pl", db, false);
     User *user3 = admin->createUser("manager2", "asdas", 
             "andrew.andrew@andrew.andrew", db, true);
     User *user4 = admin->createUser("dev2", "3123412njlsdfnsd", 
             "cos@cos.cos", db, false);
-    User *user5 = admin->createUser("dev3", "dupko", 
+    User *user5 = admin->createUser("dev3", "niewiem", 
             "andrew@andrew.andrew", db, false);
-    User *user6 = admin->createUser("dev3", "dupko", 
+    User *user6 = admin->createUser("dev3", "ategototezniewiem", 
             "andrew.andrew", db, false);
 
     Project *proj1 = user1->createProject("pierwszy", db);
